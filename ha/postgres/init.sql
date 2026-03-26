@@ -63,6 +63,24 @@ GRANT supabase_storage_admin TO postgres;
 GRANT supabase_functions_admin TO postgres;
 GRANT supabase_admin TO postgres;
 
+-- Allow all service users to connect to postgres database
+GRANT CONNECT ON DATABASE postgres TO authenticator;
+GRANT CONNECT ON DATABASE postgres TO supabase_auth_admin;
+GRANT CONNECT ON DATABASE postgres TO supabase_storage_admin;
+GRANT CONNECT ON DATABASE postgres TO supabase_functions_admin;
+GRANT CONNECT ON DATABASE postgres TO supabase_admin;
+GRANT CONNECT ON DATABASE postgres TO pgbouncer;
+GRANT CONNECT ON DATABASE postgres TO dashboard_user;
+
+-- Public schema grants (required for GoTrue, Storage, Realtime migrations)
+GRANT USAGE, CREATE ON SCHEMA public TO postgres;
+GRANT USAGE, CREATE ON SCHEMA public TO supabase_auth_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO supabase_storage_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO supabase_functions_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO supabase_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO authenticator;
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
 -- Extensions schema
 CREATE SCHEMA IF NOT EXISTS extensions;
 GRANT USAGE ON SCHEMA extensions TO postgres, anon, authenticated, service_role;
