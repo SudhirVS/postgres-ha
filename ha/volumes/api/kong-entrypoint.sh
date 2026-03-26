@@ -8,8 +8,13 @@ sed \
   -e "s|\${DASHBOARD_PASSWORD}|${DASHBOARD_PASSWORD}|g" \
   /home/kong/temp.yml > /usr/local/kong/kong.yml
 
+<<<<<<< HEAD
 # Use 'kong start' then tail the logs to keep container alive
 kong start --conf /usr/local/kong/kong.yml
 
 # Keep container running by tailing kong logs
+=======
+kong start --conf /usr/local/kong/kong.yml
+
+>>>>>>> e311f8e (updated the code)
 exec tail -f /usr/local/kong/logs/error.log
