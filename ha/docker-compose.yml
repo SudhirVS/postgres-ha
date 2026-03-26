@@ -225,8 +225,8 @@ services:
       - ${KONG_HTTP_PORT}:8000/tcp
       - ${KONG_HTTPS_PORT}:8443/tcp
     volumes:
-      - ../supabse/supabase/docker/volumes/api/kong.yml:/home/kong/temp.yml:ro
-      - ../supabse/supabase/docker/volumes/api/kong-entrypoint.sh:/home/kong/kong-entrypoint.sh:ro
+      - ./volumes/api/kong.yml:/home/kong/temp.yml:ro
+      - ./volumes/api/kong-entrypoint.sh:/home/kong/kong-entrypoint.sh:ro
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
@@ -420,7 +420,7 @@ services:
     image: supabase/edge-runtime:v1.71.2
     restart: unless-stopped
     volumes:
-      - ../supabse/supabase/docker/volumes/functions:/home/deno/functions:Z
+      - ./volumes/functions:/home/deno/functions:Z
       - deno-cache:/root/.cache/deno
     depends_on:
       kong:
@@ -512,7 +512,7 @@ services:
     image: timberio/vector:0.53.0-alpine
     restart: unless-stopped
     volumes:
-      - ../supabse/supabase/docker/volumes/logs/vector.yml:/etc/vector/vector.yml:ro
+      - ./volumes/logs/vector.yml:/etc/vector/vector.yml:ro
       - ${DOCKER_SOCKET_LOCATION}:/var/run/docker.sock:ro
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://vector:9001/health"]
