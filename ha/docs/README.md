@@ -200,8 +200,10 @@ Expected output:
 
 ### Step 4 — Access Supabase Studio
 
-Open `http://localhost:8000` in your browser.
+Open `http://<your-host-ip>:8000` in your browser.
 Login with `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD` from `.env`.
+
+For AWS EC2, replace `<your-host-ip>` with your instance's public IP and ensure port `8000` is open in the Security Group.
 
 ---
 
@@ -267,7 +269,7 @@ This uses `patronictl switchover` — zero data loss, graceful handoff.
 
 ### HAProxy Stats
 
-Open `http://localhost:7000` to see real-time backend health, connection counts, and which node is active.
+Open `http://<your-host-ip>:7000` to see real-time backend health, connection counts, and which node is active.
 
 ---
 
