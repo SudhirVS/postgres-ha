@@ -10,7 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+COPY post_bootstrap.sh /etc/patroni/post_bootstrap.sh
+COPY init.sql /etc/patroni/init.sql
+
+RUN chmod +x /entrypoint.sh /etc/patroni/post_bootstrap.sh
 
 EXPOSE 5432 8008
 

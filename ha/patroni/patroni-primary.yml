@@ -35,12 +35,7 @@ bootstrap:
     - host replication replicator 0.0.0.0/0 md5
     - host all all 0.0.0.0/0 md5
 
-  users:
-    admin:
-      password: ${POSTGRES_PASSWORD}
-      options:
-        - createrole
-        - createdb
+  post_bootstrap: /etc/patroni/post_bootstrap.sh
 
 postgresql:
   listen: 0.0.0.0:5432
