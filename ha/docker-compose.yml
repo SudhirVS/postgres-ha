@@ -26,12 +26,11 @@ services:
   # ──────────────────────────────────────────────
   etcd:
     container_name: ha-etcd
-    image: bitnami/etcd:3.5
+    image: quay.io/coreos/etcd:v3.5.14
     restart: unless-stopped
     environment:
-      ALLOW_NONE_AUTHENTICATION: "yes"
       ETCD_NAME: etcd0
-      ETCD_DATA_DIR: /bitnami/etcd/data
+      ETCD_DATA_DIR: /etcd-data
       ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
       ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
       ETCD_LISTEN_PEER_URLS: http://0.0.0.0:2380
@@ -39,10 +38,11 @@ services:
       ETCD_INITIAL_CLUSTER: etcd0=http://etcd:2380
       ETCD_INITIAL_CLUSTER_STATE: new
       ETCD_INITIAL_CLUSTER_TOKEN: supabase-ha-token
+      ETCD_AUTO_COMPACTION_RETENTION: "1"
     volumes:
-      - etcd-data:/bitnami/etcd/data
+      - etcd-data:/etcd-data
     healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
+      test: ["CMD", "etcdctl", "--endpoints=http://localhost:2379", "endpoint", "health"]
       interval: 10s
       timeout: 5s
       retries: 5
