@@ -110,3 +110,21 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 REVOKE ALL ON FUNCTION pgbouncer.get_auth(TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION pgbouncer.get_auth(TEXT) TO pgbouncer;
+
+-- Allow all Supabase service users to connect to postgres DB
+GRANT CONNECT ON DATABASE postgres TO authenticator;
+GRANT CONNECT ON DATABASE postgres TO supabase_auth_admin;
+GRANT CONNECT ON DATABASE postgres TO supabase_storage_admin;
+GRANT CONNECT ON DATABASE postgres TO supabase_functions_admin;
+GRANT CONNECT ON DATABASE postgres TO supabase_admin;
+GRANT CONNECT ON DATABASE postgres TO pgbouncer;
+GRANT CONNECT ON DATABASE postgres TO dashboard_user;
+
+-- Grant public schema usage and create to all service roles
+GRANT USAGE, CREATE ON SCHEMA public TO postgres;
+GRANT USAGE, CREATE ON SCHEMA public TO supabase_auth_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO supabase_storage_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO supabase_functions_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO supabase_admin;
+GRANT USAGE, CREATE ON SCHEMA public TO authenticator;
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;

@@ -1,24 +1,15 @@
 #!/bin/bash
-# ============================================================
-# Supabase HA - Failover Test Script
-# Run from the ha/ directory: bash scripts/test-failover.sh
-# ============================================================
-
 set -euo pipefail
 
-# shellcheck source=../.env
 ENV_FILE="$(dirname "$0")/../.env"
 source "$ENV_FILE" 2>/dev/null || true
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 log()  { echo -e "${GREEN}[$(date +%T)] $*${NC}"; }
 warn() { echo -e "${YELLOW}[$(date +%T)] $*${NC}"; }
 fail() { echo -e "${RED}[$(date +%T)] $*${NC}"; exit 1; }
 
+<<<<<<< HEAD
 # ── Helper: run psql on a specific container ─────────────────
 pg_exec() {
   local container="$1"
@@ -30,23 +21,39 @@ pg_exec() {
 get_leader() {
   local container="$1"
   docker exec "$container" curl -sf http://localhost:8008/cluster 2>/dev/null \
+=======
+pg_exec() {
+  docker exec "$1" gosu postgres psql -U postgres -h /var/run/postgresql -d postgres -c "$2"
+}
+
+get_leader() {
+  docker exec "$1" curl -sf http://localhost:8008/cluster 2>/dev/null \
+>>>>>>> e311f8e (updated the code)
     | python3 -c "import sys,json; d=json.load(sys.stdin); [print(m['name']) for m in d['members'] if m['role']=='leader']" \
     2>/dev/null || echo "unknown"
 }
 
+<<<<<<< HEAD
 # ── Helper: find which replica is now leader ─────────────────
+=======
+>>>>>>> e311f8e (updated the code)
 get_new_leader_container() {
   for c in ha-pg-replica-1 ha-pg-replica-2; do
     role=$(docker exec "$c" curl -sf http://localhost:8008/ 2>/dev/null \
       | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('role',''))" 2>/dev/null || echo "")
     if [ "$role" = "master" ] || [ "$role" = "primary" ]; then
+<<<<<<< HEAD
       echo "$c"
       return
+=======
+      echo "$c"; return
+>>>>>>> e311f8e (updated the code)
     fi
   done
   echo "ha-pg-replica-1"
 }
 
+<<<<<<< HEAD
 # ── Step 0: Ensure test table exists ─────────────────────────
 log "Step 0: Creating ha_test table on primary..."
 pg_exec ha-pg-primary \
@@ -96,17 +103,44 @@ pg_exec "$NEW_LEADER_CONTAINER" \
 log "Step 6: Restarting old primary container (it will rejoin as replica)..."
 docker start ha-pg-primary
 sleep 25
+=======
+log "Step 0: Creating ha_test table..."
+pg_exec ha-pg-primary "CREATE TABLE IF NOT EXISTS ha_test (id serial PRIMARY KEY, label text, ts timestamptz);" \
+  || fail "Could not create test table."
 
-log "Cluster state after recovery:"
+log "Step 1: Writing baseline row before failover..."
+pg_exec ha-pg-primary "INSERT INTO ha_test (label, ts) VALUES ('before-failover', now()) RETURNING id, label, ts;"
+
+LEADER_BEFORE=$(get_leader ha-pg-primary)
+log "Current leader: ${LEADER_BEFORE}"
+
+warn "Step 2: Stopping ha-pg-primary to simulate failure..."
+docker stop ha-pg-primary
+log "Waiting 20s for Patroni failover..."
+sleep 20
+>>>>>>> e311f8e (updated the code)
+
+LEADER_AFTER=$(get_leader ha-pg-replica-1)
+log "Step 3: New leader: ${LEADER_AFTER}"
+
+NEW_LEADER=$(get_new_leader_container)
+log "Step 4: Writing via new leader container: ${NEW_LEADER}..."
+pg_exec "$NEW_LEADER" "INSERT INTO ha_test (label, ts) VALUES ('after-failover', now()) RETURNING id, label, ts;"
+
+log "Step 5: Verifying data consistency..."
+pg_exec "$NEW_LEADER" "SELECT id, label, ts FROM ha_test ORDER BY id;"
+
+log "Step 6: Restarting old primary (rejoins as replica)..."
+docker start ha-pg-primary
+sleep 25
+
+log "Final cluster state:"
 docker exec ha-pg-replica-1 curl -sf http://localhost:8008/cluster \
   | python3 -c "
 import sys, json
 d = json.load(sys.stdin)
 for m in d['members']:
-    print(f\"  {m['name']:20s}  role={m['role']:10s}  state={m['state']}  lag={m.get('lag', 0)}\")
+    print(f\"  {m['name']:20s}  role={m['role']:10s}  state={m['state']}  lag={m.get('lag',0)}\")
 "
 
-log "✅ Failover test complete."
-log "   Leader before: ${LEADER_BEFORE}"
-log "   Leader after:  ${LEADER_AFTER}"
-log "   Data written before and after failover is visible — consistency maintained."
+log "✅ Failover test complete. Leader before: ${LEADER_BEFORE} → after: ${LEADER_AFTER}"
