@@ -1,10 +1,8 @@
 -- ============================================================
--- Supabase HA - Post-Bootstrap Initialization
--- Runs once on the primary after Patroni bootstraps the cluster.
--- Mirrors docker/volumes/db/* from the official Supabase repo.
+-- Supabase HA - Post-Bootstrap Initialization (postgres DB)
 -- ============================================================
 
--- Replication user (used by Patroni streaming replication)
+-- Replication user
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'replicator') THEN
@@ -12,7 +10,7 @@ BEGIN
   END IF;
 END $$;
 
--- pg_rewind user (used by Patroni for rewind after failover)
+-- pg_rewind user
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'rewind_user') THEN
@@ -24,9 +22,7 @@ BEGIN
   END IF;
 END $$;
 
--- ============================================================
--- Supabase core roles (mirrors roles.sql)
--- ============================================================
+-- Supabase core roles
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
@@ -67,9 +63,7 @@ GRANT supabase_storage_admin TO postgres;
 GRANT supabase_functions_admin TO postgres;
 GRANT supabase_admin TO postgres;
 
--- ============================================================
--- Extensions schema (mirrors supabase/postgres image defaults)
--- ============================================================
+-- Extensions schema
 CREATE SCHEMA IF NOT EXISTS extensions;
 GRANT USAGE ON SCHEMA extensions TO postgres, anon, authenticated, service_role;
 
@@ -77,28 +71,11 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp"        WITH SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS pgcrypto           WITH SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA extensions;
 
--- ============================================================
--- _supabase database + schemas (mirrors _supabase.sql, logs.sql, pooler.sql)
--- ============================================================
-SELECT 'CREATE DATABASE _supabase OWNER postgres'
-WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '_supabase') \gexec
-
-\c _supabase
-CREATE SCHEMA IF NOT EXISTS _analytics;
-ALTER SCHEMA _analytics OWNER TO postgres;
-CREATE SCHEMA IF NOT EXISTS _supavisor;
-ALTER SCHEMA _supavisor OWNER TO postgres;
-\c postgres
-
--- ============================================================
--- Realtime schema (mirrors realtime.sql)
--- ============================================================
+-- Realtime schema
 CREATE SCHEMA IF NOT EXISTS _realtime;
 ALTER SCHEMA _realtime OWNER TO postgres;
 
--- ============================================================
--- pgbouncer auth function (required by Supavisor)
--- ============================================================
+-- pgbouncer auth schema and function
 CREATE SCHEMA IF NOT EXISTS pgbouncer;
 GRANT USAGE ON SCHEMA pgbouncer TO pgbouncer;
 
