@@ -135,6 +135,55 @@ postgres-ha/                          ← repo root
 
 > Tested on AWS EC2 `t3.xlarge` (4 vCPU / 16 GB RAM / 50 GB gp3)
 
+### Required Tools
+
+| Tool | Min Version | Used For | Install Guide |
+|---|---|---|---|
+| Docker Engine | 24.0+ | Running all containers | https://docs.docker.com/engine/install/ubuntu/ |
+| Docker Compose | v2.20+ | Orchestrating the stack | Included with Docker Engine (plugin) |
+| Git | 2.34+ | Cloning the repository | https://git-scm.com/download/linux |
+| Python 3 | 3.10+ | Parsing Patroni cluster JSON output | Pre-installed on Ubuntu 22.04 |
+| curl | 7.81+ | Patroni REST API health checks | Pre-installed on Ubuntu 22.04 |
+| openssl | 3.0+ | Generating secrets and keys | Pre-installed on Ubuntu 22.04 |
+| dos2unix | 7.4+ | Fixing Windows line endings in scripts | `sudo apt-get install dos2unix` |
+| gosu | 1.14+ | Dropping root privileges in containers | Included in `postgres:15-bullseye` base image |
+| patroni | 4.0+ | PostgreSQL HA cluster manager | Installed inside Docker image via pip |
+| etcd | 3.5.14 | Distributed consensus / leader election | Runs as Docker container (`quay.io/coreos/etcd:v3.5.14`) |
+| HAProxy | 2.9+ | PostgreSQL load balancer / VIP | Runs as Docker container (`haproxy:2.9-alpine`) |
+| PostgreSQL | 15.x | Database engine | Runs as Docker container (`postgres:15-bullseye`) |
+
+### Docker Images Used
+
+| Image | Version | Purpose |
+|---|---|---|
+| `postgres` | `15-bullseye` | Base for custom Patroni+PG image |
+| `quay.io/coreos/etcd` | `v3.5.14` | etcd distributed store |
+| `haproxy` | `2.9-alpine` | PostgreSQL load balancer |
+| `supabase/studio` | `2026.03.16-sha-5528817` | Supabase dashboard UI |
+| `kong/kong` | `3.9.1` | API gateway |
+| `supabase/gotrue` | `v2.186.0` | Authentication service |
+| `postgrest/postgrest` | `v14.6` | Auto REST API |
+| `supabase/realtime` | `v2.76.5` | WebSocket subscriptions |
+| `supabase/storage-api` | `v1.44.2` | File storage |
+| `darthsim/imgproxy` | `v3.30.1` | Image transformation |
+| `supabase/postgres-meta` | `v0.95.2` | DB metadata API |
+| `supabase/edge-runtime` | `v1.71.2` | Edge Functions |
+| `supabase/logflare` | `1.31.2` | Log analytics |
+| `supabase/supavisor` | `2.7.4` | Connection pooler |
+| `timberio/vector` | `0.53.0-alpine` | Log aggregation |
+
+### Verify Installed Versions
+
+```bash
+docker --version                    # Docker version 24.x+
+docker compose version              # Docker Compose version v2.20+
+git --version                       # git version 2.34+
+python3 --version                   # Python 3.10+
+curl --version | head -1            # curl 7.81+
+openssl version                     # OpenSSL 3.0+
+dos2unix --version 2>&1 | head -1   # dos2unix 7.4+
+```
+
 ### Software to Install
 
 #### 1. Docker Engine + Compose Plugin
